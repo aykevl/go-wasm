@@ -561,49 +561,63 @@ func (p *parser) parseNameSection(base *section, name string, n uint32) (*Sectio
 		SectionName: name,
 	}
 
-	var t uint8
-	if err := read(p.r, &t); err != nil {
-		return nil, fmt.Errorf("read name type: %v", err)
+	end := p.r.Index() + int(n)
+	for p.r.Index() < end {
+		var t uint8
+		if err := read(p.r, &t); err != nil {
+			return nil, fmt.Errorf("read name type: %v", err)
+		}
+
+		var pl uint32
+		if err := readVarUint32(p.r, &pl); err != nil {
+			return nil, fmt.Errorf("read payload length: %v", err)
+		}
+
+		switch t {
+		case nameTypeModule:
+			var l uint32
+			if err := readVarUint32(p.r, &l); err != nil {
+				return nil, fmt.Errorf("read module name length: %v", err)
+			}
+
+			name := make([]byte, l)
+			if err := read(p.r, name); err != nil {
+				return nil, fmt.Errorf("read module name: %v", err)
+			}
+
+			s.Module = string(name)
+		case nameTypeFunction:
+			s.Functions = &NameMap{}
+			if err := p.parseNameMap(s.Functions); err != nil {
+				return nil, fmt.Errorf("read function name map: %v", err)
+			}
+		case nameTypeLocal:
+			s.Locals = &Locals{}
+			p.loopCount(func() error {
+				var l LocalName
+				if err := readVarUint32(p.r, &l.Index); err != nil {
+					return fmt.Errorf("read local func index: %v", err)
+				}
+				if err := p.parseNameMap(&l.LocalMap); err != nil {
+					return fmt.Errorf("read local name map: %v", err)
+				}
+				s.Locals.Funcs = append(s.Locals.Funcs, l)
+				return nil
+			})
+		default:
+			subsection := SectionNameUnknown{
+				ID:      t,
+				Payload: make([]byte, pl),
+			}
+			if err := read(p.r, subsection.Payload); err != nil {
+				return nil, fmt.Errorf("read name subsection payload: %v", err)
+			}
+			s.UnknownSections = append(s.UnknownSections, subsection)
+		}
 	}
 
-	var pl uint32
-	if err := readVarUint32(p.r, &pl); err != nil {
-		return nil, fmt.Errorf("read payload length: %v", err)
-	}
-
-	switch t {
-	case nameTypeModule:
-		var l uint32
-		if err := readVarUint32(p.r, &l); err != nil {
-			return nil, fmt.Errorf("read module name length: %v", err)
-		}
-
-		name := make([]byte, l)
-		if err := read(p.r, name); err != nil {
-			return nil, fmt.Errorf("read module name: %v", err)
-		}
-
-		s.Module = string(name)
-	case nameTypeFunction:
-		s.Functions = &NameMap{}
-		if err := p.parseNameMap(s.Functions); err != nil {
-			return nil, fmt.Errorf("read function name map: %v", err)
-		}
-	case nameTypeLocal:
-		s.Locals = &Locals{}
-		p.loopCount(func() error {
-			var l LocalName
-			if err := readVarUint32(p.r, &l.Index); err != nil {
-				return fmt.Errorf("read local func index: %v", err)
-			}
-			if err := p.parseNameMap(&l.LocalMap); err != nil {
-				return fmt.Errorf("read local name map: %v", err)
-			}
-			s.Locals.Funcs = append(s.Locals.Funcs, l)
-			return nil
-		})
-	default:
-		return nil, fmt.Errorf("unknown name type 0x%02x", t)
+	if p.r.Index() != end {
+		return nil, fmt.Errorf("read %d bytes past the end of the name section", p.r.Index()-end)
 	}
 
 	return &s, nil

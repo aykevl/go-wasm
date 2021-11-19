@@ -312,6 +312,9 @@ type SectionName struct {
 	// Locals contains local function name mappings.
 	Locals *Locals
 
+	// UnknownSections contains unrecognized subsections.
+	UnknownSections []SectionNameUnknown
+
 	*section
 }
 
@@ -345,6 +348,16 @@ type LocalName struct {
 
 	// LocalMap is the name mapping for the function.
 	LocalMap NameMap
+}
+
+// SectionNameUnknown represents an unknown subsection of the custom name
+// section.
+type SectionNameUnknown struct {
+	// Type is the name type code for this subsection.
+	ID uint8
+
+	// Payload is the raw payload for the section.
+	Payload []byte
 }
 
 // ExternalKind is set as the Kind for an import entry. The value specifies
