@@ -133,7 +133,7 @@ func (p *parser) parseSection(ss *[]Section) error {
 		if sid > secData {
 			// This happens if the previous section was not read to the end,
 			// indicating a bug in that section parser.
-			return fmt.Errorf("data corrupted; section id 0x%02x not valid", sid)
+			return fmt.Errorf("data corrupted; section id 0x%02x not valid", uint8(sid))
 		}
 		// Skip unknown section
 		return nil
