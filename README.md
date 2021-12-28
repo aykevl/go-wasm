@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/akupila/go-wasm.svg?style=svg)](https://circleci.com/gh/akupila/go-wasm)
+[![GitHub Actions](https://github.com/aykevl/go-wasm/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/aykevl/go-wasm/actions/workflows/go.yml)
 [![godoc](https://img.shields.io/badge/godoc-Reference-brightgreen.svg?style=flat)](https://godoc.org/github.com/akupila/go-wasm)
 
 # go-wasm
