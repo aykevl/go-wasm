@@ -20,7 +20,7 @@ func TestEval(t *testing.T) {
 		r := bytes.NewBuffer(tc.buf)
 		result, err := Eval(r)
 		if err != nil {
-			t.Errorf("failed to run test %d: %w", i, err)
+			t.Errorf("failed to run test %d: %v", i, err)
 			continue
 		}
 		if !reflect.DeepEqual(result, tc.result) {
