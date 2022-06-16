@@ -297,6 +297,15 @@ type DataSegment struct {
 	Data []byte
 }
 
+// SectionDataCount is used to simplify single-pass validation and occurs before
+// the code section. It is not part of the MVP but was added later.
+type SectionDataCount struct {
+	// Number of data segments in the data section.
+	NumSegments uint32
+
+	*section
+}
+
 // SectionName is a custom section that provides debugging information, by
 // matching indices to human readable names.
 type SectionName struct {

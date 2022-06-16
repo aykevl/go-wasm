@@ -18,18 +18,19 @@ const opEnd = 0x0b
 type sectionID uint8
 
 const (
-	secCustom   sectionID = iota // 0x00
-	secType                      // 0x01
-	secImport                    // 0x02
-	secFunction                  // 0x03
-	secTable                     // 0x04
-	secMemory                    // 0x05
-	secGlobal                    // 0x06
-	secExport                    // 0x07
-	secStart                     // 0x08
-	secElement                   // 0x09
-	secCode                      // 0x0A
-	secData                      // 0x0B
+	secCustom    sectionID = iota // 0x00
+	secType                       // 0x01
+	secImport                     // 0x02
+	secFunction                   // 0x03
+	secTable                      // 0x04
+	secMemory                     // 0x05
+	secGlobal                     // 0x06
+	secExport                     // 0x07
+	secStart                      // 0x08
+	secElement                    // 0x09
+	secCode                       // 0x0A
+	secData                       // 0x0B
+	secDataCount                  // 0x0C
 )
 
 type parser struct {
@@ -126,6 +127,8 @@ func (p *parser) parseSection(ss *[]Section) error {
 		s, err = p.parseCodeSection(base)
 	case secData:
 		s, err = p.parseDataSection(base)
+	case secDataCount:
+		s, err = p.parseDataCountSection(base)
 	default:
 		if _, err := io.CopyN(ioutil.Discard, p.r, int64(base.size)); err != nil {
 			return fmt.Errorf("discard section payload, %d bytes: %v", base.size, err)
@@ -543,6 +546,16 @@ func (p *parser) parseDataSection(base *section) (*SectionData, error) {
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	return &s, nil
+}
+
+func (p *parser) parseDataCountSection(base *section) (*SectionDataCount, error) {
+	s := SectionDataCount{section: base}
+
+	if err := readVarUint32(p.r, &s.NumSegments); err != nil {
+		return nil, fmt.Errorf("read data count section: %v", err)
 	}
 
 	return &s, nil
