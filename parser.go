@@ -172,6 +172,12 @@ func (p *parser) parseCustomSection(base *section) (Section, error) {
 		// purposes. It's defined in the spec so we'll parse it.
 		return p.parseNameSection(base, name, base.size)
 	}
+	if name == "linking" {
+		// A linking section is added to object files and used by the linker.
+		// It is defined here:
+		// https://github.com/WebAssembly/tool-conventions/blob/main/Linking.md
+		return p.parseLinkingSection(base, name)
+	}
 
 	s := SectionCustom{
 		section:     base,
@@ -631,6 +637,136 @@ func (p *parser) parseNameSection(base *section, name string, n uint32) (*Sectio
 
 	if p.r.Index() != end {
 		return nil, fmt.Errorf("read %d bytes past the end of the name section", p.r.Index()-end)
+	}
+
+	return &s, nil
+}
+
+const (
+	linkingTypeSegment     = 5 // WASM_SEGMENT_INFO
+	linkingTypeSymbolTable = 8 // WASM_SYMBOL_TABLE
+)
+
+func (p *parser) parseLinkingSection(base *section, name string) (*SectionLinking, error) {
+	// Parse the linking section, as specified here:
+	// https://github.com/WebAssembly/tool-conventions/blob/main/Linking.md#linking-metadata-section
+	s := SectionLinking{
+		section:     base,
+		SectionName: name,
+	}
+
+	end := p.r.Index() + int(base.size)
+
+	// Check version of the linking section.
+	var version uint32
+	if err := readVarUint32(p.r, &version); err != nil {
+		return nil, fmt.Errorf("read linking section version: %v", err)
+	}
+	if version != 2 {
+		return nil, fmt.Errorf("unsupported linking section version %d (expected 2)", version)
+	}
+
+	// Read each subsection, and parse it if it is a known subsection kind.
+	for p.r.Index() < end {
+		var subsectionType uint8
+		if err := read(p.r, &subsectionType); err != nil {
+			return nil, fmt.Errorf("read subsection type: %v", err)
+		}
+
+		var subsectionLength uint32
+		if err := readVarUint32(p.r, &subsectionLength); err != nil {
+			return nil, fmt.Errorf("read subsection length: %v", err)
+		}
+
+		switch subsectionType {
+		case linkingTypeSegment:
+			// Read the segments of this object file.
+			var numSegments uint32
+			if err := readVarUint32(p.r, &numSegments); err != nil {
+				return nil, fmt.Errorf("read number of segments: %v", err)
+			}
+			for i := 0; i < int(numSegments); i++ {
+				var segment LinkingSegment
+				if err := readString(p.r, &segment.Name); err != nil {
+					return nil, fmt.Errorf("read segment name: %v", err)
+				}
+				if err := readVarUint32(p.r, &segment.Alignment); err != nil {
+					return nil, fmt.Errorf("read segment alignment: %v", err)
+				}
+				if err := readVarUint32(p.r, &segment.Flags); err != nil {
+					return nil, fmt.Errorf("read segment flags: %v", err)
+				}
+				s.Segments = append(s.Segments, segment)
+			}
+		case linkingTypeSymbolTable:
+			// Read the symbol table of this object file.
+			// Unfortunately, the specification isn't complete. I had to look at
+			// the LLVM implementation to figure out all the fields:
+			// https://github.com/llvm/llvm-project/blob/release/18.x/llvm/lib/Object/WasmObjectFile.cpp#L600
+			var numSymbols uint32
+			if err := readVarUint32(p.r, &numSymbols); err != nil {
+				return nil, fmt.Errorf("read number of symbols: %v", err)
+			}
+			for i := 0; i < int(numSymbols); i++ {
+				var kind uint8
+				if err := read(p.r, &kind); err != nil {
+					return nil, fmt.Errorf("read symbol kind: %v", err)
+				}
+				var flags uint32
+				if err := readVarUint32(p.r, &flags); err != nil {
+					return nil, fmt.Errorf("read symbol flags: %v", err)
+				}
+				symbol := LinkingSymbol{
+					Kind:  LinkingSymbolKind(kind),
+					Flags: LinkingSymbolFlags(flags),
+				}
+				isDefined := symbol.Flags&LinkingSymbolFlagUndefined == 0
+				isExplicitName := symbol.Flags&LinkingSymbolFlagExplicitName != 0
+				switch symbol.Kind {
+				case LinkingSymbolKindFunction, LinkingSymbolKindGlobal:
+					if err := readVarUint32(p.r, &symbol.Index); err != nil {
+						return nil, fmt.Errorf("read symbol index: %v", err)
+					}
+					if isDefined || isExplicitName {
+						if err := readString(p.r, &symbol.Name); err != nil {
+							return nil, fmt.Errorf("read symbol name: %v", err)
+						}
+					}
+				case LinkingSymbolKindData:
+					if err := readString(p.r, &symbol.Name); err != nil {
+						return nil, fmt.Errorf("read symbol name: %v", err)
+					}
+					if isDefined {
+						if err := readVarUint32(p.r, &symbol.Index); err != nil {
+							return nil, fmt.Errorf("read symbol index: %v", err)
+						}
+						if err := readVarUint64(p.r, &symbol.Offset); err != nil {
+							return nil, fmt.Errorf("read symbol offset: %v", err)
+						}
+						if err := readVarUint64(p.r, &symbol.Size); err != nil {
+							return nil, fmt.Errorf("read symbol size: %v", err)
+						}
+					}
+				case LinkingSymbolKindSection:
+					if err := readVarUint32(p.r, &symbol.Index); err != nil {
+						return nil, fmt.Errorf("read symbol index: %v", err)
+					}
+				default:
+					return nil, fmt.Errorf("unknown symbol kind: %v", symbol.Kind)
+				}
+				s.Symbols = append(s.Symbols, symbol)
+			}
+		default:
+			// Unknown subsection, so store it as binary data.
+			subsection := SectionLinkingUnknown{
+				ID:      subsectionType,
+				Payload: make([]byte, subsectionLength),
+			}
+			if err := read(p.r, subsection.Payload); err != nil {
+				return nil, fmt.Errorf("read linking subsection payload: %v", err)
+			}
+			s.UnknownSections = append(s.UnknownSections, subsection)
+		}
 	}
 
 	return &s, nil

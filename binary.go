@@ -56,6 +56,23 @@ func readVarUint32(r io.Reader, v *uint32) error {
 	return nil
 }
 
+func readVarUint64(r io.Reader, v *uint64) error {
+	var shift uint32
+	for {
+		b, err := readByte(r)
+		if err != nil {
+			return err
+		}
+		*v |= uint64(b&0x7F) << shift
+		if (b & 0x80) == 0 {
+			break
+		}
+		shift += 7
+	}
+
+	return nil
+}
+
 func readVarInt7(r io.Reader, v *int8) error {
 	if err := read(r, v); err != nil {
 		return err
@@ -89,4 +106,17 @@ func varUint32Size(v uint32) int {
 		v = v >> 8
 	}
 	return s
+}
+
+func readString(r io.Reader, result *string) error {
+	var stringLen uint32
+	if err := readVarUint32(r, &stringLen); err != nil {
+		return err
+	}
+	stringBytes := make([]byte, stringLen)
+	if err := read(r, stringBytes); err != nil {
+		return err
+	}
+	*result = string(stringBytes)
+	return nil
 }

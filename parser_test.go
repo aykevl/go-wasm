@@ -23,6 +23,7 @@ func TestParser(t *testing.T) {
 	}{
 		{"empty.wasm", nil},
 		{"helloworld.wasm", []string{"Custom", "Type", "Import", "Function", "Table", "Memory", "Global", "Export", "Element", "Code", "Data", "Custom"}},
+		{"objfile.o", []string{"Type", "Import", "Function", "sectionID(12)", "Code", "Data", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom", "Custom"}},
 	}
 
 	for _, tc := range tt {

@@ -1,0 +1,106 @@
+{
+	"SectionName": "linking",
+	"Segments": [
+		{
+			"Name": ".bss.exported_global",
+			"Alignment": 2,
+			"Flags": 0
+		},
+		{
+			"Name": ".bss.exported_global_2",
+			"Alignment": 3,
+			"Flags": 0
+		}
+	],
+	"Symbols": [
+		{
+			"Kind": 0,
+			"Flags": 4,
+			"Name": "exported",
+			"Index": 1,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 1,
+			"Flags": 4,
+			"Name": "exported_global_2",
+			"Index": 1,
+			"Offset": 0,
+			"Size": 8
+		},
+		{
+			"Kind": 1,
+			"Flags": 4,
+			"Name": "exported_global",
+			"Index": 0,
+			"Offset": 0,
+			"Size": 4
+		},
+		{
+			"Kind": 1,
+			"Flags": 16,
+			"Name": "imported_global",
+			"Index": 0,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 0,
+			"Flags": 16,
+			"Name": "",
+			"Index": 0,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 0,
+			"Flags": 4,
+			"Name": "exported_2",
+			"Index": 2,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 3,
+			"Flags": 2,
+			"Name": "",
+			"Index": 6,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 2,
+			"Flags": 16,
+			"Name": "",
+			"Index": 0,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 3,
+			"Flags": 2,
+			"Name": "",
+			"Index": 8,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 3,
+			"Flags": 2,
+			"Name": "",
+			"Index": 9,
+			"Offset": 0,
+			"Size": 0
+		},
+		{
+			"Kind": 3,
+			"Flags": 2,
+			"Name": "",
+			"Index": 10,
+			"Offset": 0,
+			"Size": 0
+		}
+	],
+	"UnknownSections": null
+}

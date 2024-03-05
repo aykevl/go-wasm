@@ -1,0 +1,18 @@
+{
+	"Entries": [
+		{
+			"Form": 96,
+			"Params": null,
+			"ReturnCount": 0,
+			"ReturnTypes": []
+		},
+		{
+			"Form": 96,
+			"Params": null,
+			"ReturnCount": 0,
+			"ReturnTypes": [
+				124
+			]
+		}
+	]
+}

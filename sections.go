@@ -327,6 +327,23 @@ type SectionName struct {
 	*section
 }
 
+// SectionLinking is a custom section used by Clang and LLVM.
+type SectionLinking struct {
+	// SectionName is the name of the name section. The value is always "linking".
+	SectionName string
+
+	// Segments inside the object file. These only seem to contain data values.
+	Segments []LinkingSegment
+
+	// Symbol table of the object file.
+	Symbols []LinkingSymbol
+
+	// UnknownSections contains unrecognized subsections.
+	UnknownSections []SectionLinkingUnknown
+
+	*section
+}
+
 // A NameMap is a map that maps an index to a name.
 type NameMap struct {
 	// Names contains a list of mappings in the NameMap.
@@ -368,6 +385,88 @@ type SectionNameUnknown struct {
 	// Payload is the raw payload for the section.
 	Payload []byte
 }
+
+// SectionLinkingUnknown represents an unknown subsection of the custom linking
+// section.
+type SectionLinkingUnknown struct {
+	// Type is the type code for this subsection.
+	ID uint8
+
+	// Payload is the raw payload for the section.
+	Payload []byte
+}
+
+// LinkingSegment represents a segment as defined in the WebAssembly linking
+// section.
+type LinkingSegment struct {
+	Name      string // segment name
+	Alignment uint32 // alignment, encoded as a power of 2
+	Flags     uint32
+}
+
+// A single symbol in the linking section symbol table.
+type LinkingSymbol struct {
+	// Symbol kind, like function, global, etc.
+	Kind LinkingSymbolKind
+
+	Flags LinkingSymbolFlags
+
+	// This field may be empty for some symbols (such as undefined symbols).
+	Name string
+
+	// Index, value depends on the symbol kind.
+	Index uint32
+
+	// These two fields are only set for defined data symbols.
+	Offset uint64
+	Size   uint64
+}
+
+// Symbol kind, such as function or global.
+type LinkingSymbolKind uint8
+
+const (
+	LinkingSymbolKindFunction LinkingSymbolKind = 0 // SYMTAB_FUNCTION
+	LinkingSymbolKindData     LinkingSymbolKind = 1 // SYMTAB_DATA
+	LinkingSymbolKindGlobal   LinkingSymbolKind = 2 // SYMTAB_GLOBAL
+	LinkingSymbolKindSection  LinkingSymbolKind = 3 // SYMTAB_SECTION
+	LinkingSymbolKindEvent    LinkingSymbolKind = 4 // SYMTAB_EVENT
+	LinkingSymbolKindTable    LinkingSymbolKind = 5 // SYMTAB_TABLE
+)
+
+func (k LinkingSymbolKind) String() string {
+	switch k {
+	case LinkingSymbolKindFunction:
+		return "function"
+	case LinkingSymbolKindData:
+		return "data"
+	case LinkingSymbolKindGlobal:
+		return "global"
+	case LinkingSymbolKindSection:
+		return "section"
+	case LinkingSymbolKindEvent:
+		return "event"
+	case LinkingSymbolKindTable:
+		return "table"
+	default:
+		return "unknown-symbol-kind"
+	}
+}
+
+// Symbol flags, such as the local/weak flags (similar to STB_WEAK etc).
+type LinkingSymbolFlags uint32
+
+const (
+	LinkingSymbolFlagBindingWeak      LinkingSymbolFlags = 1     // WASM_SYM_BINDING_WEAK
+	LinkingSymbolFlagBindingLocal     LinkingSymbolFlags = 2     // WASM_SYM_BINDING_LOCAL
+	LinkingSymbolFlagVisibilityHidden LinkingSymbolFlags = 4     // WASM_SYM_VISIBILITY_HIDDEN
+	LinkingSymbolFlagUndefined        LinkingSymbolFlags = 0x10  // WASM_SYM_UNDEFINED
+	LinkingSymbolFlagExported         LinkingSymbolFlags = 0x20  // WASM_SYM_EXPORTED
+	LinkingSymbolFlagExplicitName     LinkingSymbolFlags = 0x40  // WASM_SYM_EXPLICIT_NAME
+	LinkingSymbolFlagNoStrip          LinkingSymbolFlags = 0x80  // WASM_SYM_NO_STRIP
+	LinkingSymbolFlagTLS              LinkingSymbolFlags = 0x100 // WASM_SYM_TLS
+	LinkingSymbolFlagAbsolute         LinkingSymbolFlags = 0x200 // WASM_SYM_ABSOLUTE
+)
 
 // ExternalKind is set as the Kind for an import entry. The value specifies
 // what type of import it is.
