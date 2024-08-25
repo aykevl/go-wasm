@@ -751,6 +751,15 @@ func (p *parser) parseLinkingSection(base *section, name string) (*SectionLinkin
 					if err := readVarUint32(p.r, &symbol.Index); err != nil {
 						return nil, fmt.Errorf("read symbol index: %v", err)
 					}
+				case LinkingSymbolKindTable:
+					if err := readVarUint32(p.r, &symbol.Index); err != nil {
+						return nil, fmt.Errorf("read symbol index: %v", err)
+					}
+					if isDefined || isExplicitName {
+						if err := readString(p.r, &symbol.Name); err != nil {
+							return nil, fmt.Errorf("read symbol name: %v", err)
+						}
+					}
 				default:
 					return nil, fmt.Errorf("unknown symbol kind: %v", symbol.Kind)
 				}

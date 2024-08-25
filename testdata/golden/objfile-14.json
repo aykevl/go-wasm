@@ -1,4 +1,4 @@
 {
-	"SectionName": "reloc..debug_ranges",
-	"Payload": "CAQIAAAACAQAMggIBQAIDAUL"
+	"SectionName": "reloc..debug_info",
+	"Payload": "CBgJBggACQwLAAkSC9UACRYNAAkaC+gACSIKAAknC4YBBTMCAAk4C5YBCT8LmgEFSwEACVALrAEIVwAADWIJCWcLvAEIcgAxCXgLswEIfwUADYoBCQmPAQvFAQiaAQYADaUBCQmqAQvQAQm5AQvcAQ=="
 }

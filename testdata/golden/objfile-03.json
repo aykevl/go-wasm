@@ -1,3 +1,11 @@
 {
-	"NumSegments": 2
+	"Entries": [
+		{
+			"Index": 0,
+			"Offset": "QQEL",
+			"Elems": [
+				1
+			]
+		}
+	]
 }

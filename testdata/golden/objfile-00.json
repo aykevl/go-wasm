@@ -13,6 +13,14 @@
 			"ReturnTypes": [
 				124
 			]
+		},
+		{
+			"Form": 96,
+			"Params": null,
+			"ReturnCount": 0,
+			"ReturnTypes": [
+				127
+			]
 		}
 	]
 }

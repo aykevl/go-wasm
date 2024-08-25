@@ -27,6 +27,17 @@
 		},
 		{
 			"Module": "env",
+			"Field": "callback",
+			"Kind": 0,
+			"FunctionType": {
+				"Index": 0
+			},
+			"TableType": null,
+			"MemoryType": null,
+			"GlobalType": null
+		},
+		{
+			"Module": "env",
 			"Field": "__stack_pointer",
 			"Kind": 3,
 			"FunctionType": null,
@@ -36,6 +47,21 @@
 				"ContentType": 127,
 				"Mutable": true
 			}
+		},
+		{
+			"Module": "env",
+			"Field": "__indirect_function_table",
+			"Kind": 1,
+			"FunctionType": null,
+			"TableType": {
+				"ElemType": 112,
+				"Limits": {
+					"Initial": 1,
+					"Maximum": 0
+				}
+			},
+			"MemoryType": null,
+			"GlobalType": null
 		}
 	]
 }

@@ -1,14 +1,16 @@
 {
-	"Entries": [
+	"Bodies": [
 		{
-			"Index": 0,
-			"Offset": "QQAL",
-			"Data": "AAAAAA=="
+			"Locals": null,
+			"Code": "QQBCn4quj4XXx4TAADcDiICAgABBAEEFNgKAgICAAEEAQQM2AoCAgIAAEICAgIAACw=="
 		},
 		{
-			"Index": 0,
-			"Offset": "QQgL",
-			"Data": "AAAAAAAAAAA="
+			"Locals": null,
+			"Code": "QQArA4iAgIAACw=="
+		},
+		{
+			"Locals": null,
+			"Code": "QYGAgIAACw=="
 		}
 	]
 }

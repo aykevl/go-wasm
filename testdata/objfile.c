@@ -14,3 +14,11 @@ void exported(void) {
 double exported_2(void) {
 	return exported_global_2;
 }
+
+typedef void (*callback_t)(void);
+
+void callback(void);
+
+callback_t getCallback(void) {
+	return callback;
+}

@@ -1,4 +1,4 @@
 {
-	"SectionName": ".debug_str",
-	"Payload": "Y2xhbmcgdmVyc2lvbiAxNy4wLjYgKEZlZG9yYSAxNy4wLjYtMi5mYzM5KQB0ZXN0ZGF0YS9vYmpmaWxlLmMAL2hvbWUvYXlrZS9zcmMvdGlueWdvL2dvLXdhc20AZXhwb3J0ZWRfZ2xvYmFsAGludABleHBvcnRlZF9nbG9iYWxfMgBkb3VibGUAaW1wb3J0ZWQAZXhwb3J0ZWQAZXhwb3J0ZWRfMgA="
+	"SectionName": ".debug_ranges",
+	"Payload": "AgAAADQAAAA1AAAAQAAAAEEAAABJAAAAAAAAAAAAAAA="
 }

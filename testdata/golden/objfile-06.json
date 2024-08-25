@@ -1,4 +1,14 @@
 {
-	"SectionName": ".debug_abbrev",
-	"Payload": "AREBJQ4TBQMOEBcbDhEBVRcAAAI0AAMOSRM/GToLOwsCGAAAAyQAAw4+CwsLAAAELgERARIGQBiXQhkDDjoLOwsnGT8ZAAAFiYIBADETEQEAAAYuAAMOOgs7CycZPBk/GQAABy4AEQESBkAYl0IZAw46CzsLJxlJEz8ZAAAA"
+	"Entries": [
+		{
+			"Index": 0,
+			"Offset": "QQAL",
+			"Data": "AAAAAA=="
+		},
+		{
+			"Index": 0,
+			"Offset": "QQgL",
+			"Data": "AAAAAAAAAAA="
+		}
+	]
 }
