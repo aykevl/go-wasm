@@ -12,9 +12,6 @@ import (
 // wasm file.
 const magicnumber = 0x6d736100 // \0asm
 
-// opEnd is the op code for a section end
-const opEnd = 0x0b
-
 type sectionID uint8
 
 const (
@@ -187,7 +184,7 @@ func (p *parser) parseCustomSection(base *section) (Section, error) {
 	// set raw bytes
 	s.Payload = make([]byte, base.size)
 	if err := read(p.r, s.Payload); err != nil {
-		return nil, fmt.Errorf("read custom section payload: %v", err)
+		return nil, fmt.Errorf("read custom section %#v payload: %v", name, err)
 	}
 
 	return &s, nil
@@ -383,7 +380,7 @@ func (p *parser) parseGlobalSection(base *section) (*SectionGlobal, error) {
 			return fmt.Errorf("read global mutability: %v", err)
 		}
 
-		if err := readUntil(p.r, opEnd, &e.Init); err != nil {
+		if err := readInitExpr(p.r, &e.Init); err != nil {
 			return fmt.Errorf("read global init expression: %v", err)
 		}
 
@@ -454,7 +451,7 @@ func (p *parser) parseElementSection(base *section) (*SectionElement, error) {
 			return fmt.Errorf("read element index: %v", err)
 		}
 
-		if err := readUntil(p.r, opEnd, &e.Offset); err != nil {
+		if err := readInitExpr(p.r, &e.Offset); err != nil {
 			return fmt.Errorf("read offset expression: %v", err)
 		}
 
@@ -526,15 +523,29 @@ func (p *parser) parseCodeSection(base *section) (*SectionCode, error) {
 func (p *parser) parseDataSection(base *section) (*SectionData, error) {
 	s := SectionData{section: base}
 
+	const (
+		isPassive   = 0x01
+		hasMemIndex = 0x02
+	)
+
 	err := p.loopCount(func() error {
 		var e DataSegment
 
-		if err := readVarUint32(p.r, &e.Index); err != nil {
-			return fmt.Errorf("read data segment index: %v", err)
+		var initFlags uint32
+		if err := readVarUint32(p.r, &initFlags); err != nil {
+			return fmt.Errorf("read data segment flags: %v", err)
 		}
 
-		if err := readUntil(p.r, opEnd, &e.Offset); err != nil {
-			return fmt.Errorf("read data section offset initializer: %v", err)
+		if initFlags&hasMemIndex != 0 {
+			if err := readVarUint32(p.r, &e.Index); err != nil {
+				return fmt.Errorf("read data segment index: %v", err)
+			}
+		}
+
+		if initFlags&isPassive == 0 {
+			if err := readInitExpr(p.r, &e.Offset); err != nil {
+				return fmt.Errorf("read data section offset initializer: %v", err)
+			}
 		}
 
 		var size uint32
